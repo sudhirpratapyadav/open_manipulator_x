@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import os
 import sys
@@ -183,8 +185,8 @@ class ObjectDetector:
 	
 	def __init__(
 		self,
-		img_size=(1280, 720),  # inference size (width, height) (x, y)
-		# imgsz=(640, 480),  # inference size (width, height) (x, y)
+		# img_size=(1280, 720),  # inference size (width, height) (x, y)
+		img_size=(640, 480),  # inference size (width, height) (x, y)
 		view_img=False,  # show results
 		print_log=False,
 	):
@@ -462,18 +464,19 @@ class ObjectDetector:
 
 def main(args=None):
 
+	rospy.init_node('object_detector_node', anonymous=True)
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--img-size', nargs='+', type=int, default=[640, 480], help='inference size w,h')
 	parser.add_argument('--view-img', action='store_true', help='display image')
 	parser.add_argument('--print-log', action='store_true', help='print results')
-	opt = parser.parse_args()
-
-	rospy.init_node('object_detector_node', anonymous=True)
-
-	np.set_printoptions(precision=3)
+	opt, unknown = parser.parse_known_args()
 
 	object_detector = ObjectDetector(**vars(opt))
 	object_detector.start_detection()
+
+
+	np.set_printoptions(precision=3)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import rospy
 from threading import Thread
 
@@ -308,7 +310,7 @@ class OpenManipulatorControl():
 
 def main(args=None):
 
-	rospy.init_node('open_manipulator_control_node', anonymous=True)
+	rospy.init_node('open_manipulator_env_node', anonymous=True)
 
 	robot_arm = OpenManipulatorControl()
 
