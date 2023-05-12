@@ -15,3 +15,6 @@ ROS package for Open Manipulator Robot to provide functionality of GYM like envi
   - Backproject (u,v) to (X,Y,Z)_cam using depth
   - Transfomrs (X,Y,Z)_cam to (X,Y,Z)_wolrd using a Chekerboard pattern placed in the world acting as origin of world cordinate
   - Publishes object_position to /object_pos topoic which can be subscribed by other nodes
+
+
+https://file.io/SAlGzN2hTcIB
