@@ -35,9 +35,6 @@ class Timing:
         self.fps_curr = 0.0
         self.fps_mean = 0.0
 
-        rclpy.init()  # Initialize the rclpy library
-        self.node = rclpy.create_node('object_detector') 
-
 
     def start_loop(self):
         self.timing_details['start_time'] = time.time()
@@ -187,7 +184,7 @@ def detectObject(frame, crop_coord):
         return False, (-1, -1)
 
 
-class ObjectDetector:
+class ObjectDetector(Node):
     
     def __init__(
         self,
@@ -196,6 +193,7 @@ class ObjectDetector:
         view_img=False,  # show results
         print_log=False,
     ):
+        super().__init__('object_detector')
         print('Initialising Object Detector')
         
         self.imgsz = img_size
@@ -292,7 +290,7 @@ class ObjectDetector:
 
         print('Successfully Initialised')
 
-        self.pub = self.node.create_publisher(PointStamped, 'object_position', 10)
+        self.pub = self.create_publisher(PointStamped, 'object_position', 10)
 
     def log(self, *args, **kwargs):
             if self.print_log:
@@ -300,7 +298,8 @@ class ObjectDetector:
 
     def start_detection(self):
         try:
-            while True:
+            while rclpy.ok():
+                rclpy.spin_once(self)
                 self.tm.start_loop()
 
                 self.log('\n\n-------------Start---------\n')
@@ -496,12 +495,18 @@ def main(args=None):
     parser.add_argument('--print-log', action='store_true', help='print results')
     opt, unknown = parser.parse_known_args()
 
-    object_detector = ObjectDetector(**vars(opt))
-    object_detector.start_detection()
-
-
     np.set_printoptions(precision=3)
 
+    rclpy.init()  # Initialize the rclpy library
+
+    object_detector = ObjectDetector(**vars(opt))
+    try:
+        object_detector.start_detection()
+    except KeyboardInterrupt:
+        object_detector.get_logger().info('Object detection stopped by user.')
+    finally:
+        object_detector.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == "__main__":
     main()
