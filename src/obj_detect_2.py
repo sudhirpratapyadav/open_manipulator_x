@@ -7,7 +7,8 @@ from pathlib import Path
 import time
 import numpy as np
 import cv2
-import rospy
+import rclpy
+from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
 from collections import OrderedDict
 
@@ -33,6 +34,9 @@ class Timing:
 
         self.fps_curr = 0.0
         self.fps_mean = 0.0
+
+        rclpy.init()  # Initialize the rclpy library
+        self.node = rclpy.create_node('object_detector') 
 
 
     def start_loop(self):
@@ -288,7 +292,7 @@ class ObjectDetector:
 
         print('Successfully Initialised')
 
-        self.pub = rospy.Publisher('object_position', PointStamped, queue_size=10)
+        self.pub = self.node.create_publisher(PointStamped, 'object_position', 10)
 
     def log(self, *args, **kwargs):
             if self.print_log:
@@ -426,11 +430,13 @@ class ObjectDetector:
                         self.log("Detected object depth is outside range, range:", self.depth_range)
 
                     point = PointStamped()
-                    point.header.stamp = rospy.Time.now()
-                    point.header.frame_id = "/"
+                    point.header.stamp = self.node.get_clock().now().to_msg()  # Get current time in ROS 2
+                    point.header.frame_id = "world"  # Use "world" or another frame_id ("/" is discouraged in ROS 2)
+
                     point.point.x = self.obj_vec[0][0]
                     point.point.y = self.obj_vec[0][1]
                     point.point.z = self.obj_vec[0][2]
+
                     self.pub.publish(point)
                 ## -------------------------------------------- ##
 
@@ -483,8 +489,6 @@ class ObjectDetector:
             cv2.destroyAllWindows()
 
 def main(args=None):
-
-    rospy.init_node('object_detector_node', anonymous=True)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--img-size', nargs='+', type=int, default=[320, 240], help='inference size w,h')
